@@ -3,3 +3,4 @@
 build
 target
 !gradle-wrapper.jar
+test.json
