@@ -3,11 +3,14 @@ package de.adscale;
 import static com.google.common.base.Splitter.on;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MbeanRun {
 
@@ -15,11 +18,11 @@ public class MbeanRun {
 
     private String methodName;
 
-    private String appSpecifier;
+    private List<String> appSpecifiers;
 
     private List<String> args;
 
-    private Pattern compile;
+    private List<Pattern> compiledPatterns;
 
 
     public String getObjectName() {
@@ -52,23 +55,33 @@ public class MbeanRun {
     }
 
 
-    public String getAppSpecifier() {
-        return appSpecifier;
+    public List<String> getAppSpecifier() {
+        return appSpecifiers;
     }
 
 
-    public void setAppSpecifier(String appSpecifier) {
-        this.appSpecifier = appSpecifier;
+    public void setAppSpecifier(List<String> appSpecifiers) {
+        this.appSpecifiers = appSpecifiers;
     }
 
 
-    public Pattern getAppSpecifierPattern() {
-        if (compile != null) {
-            return compile;
+    public Stream<Pattern> getAppSpecifierPatterns() {
+        if (compiledPatterns != null) {
+            return compiledPatterns.stream();
         }
-        List<String> quoted = ImmutableList.copyOf(on("*").split(appSpecifier)).stream().map(Pattern::quote).collect(Collectors.toList());
-        String join = Joiner.on(".*").join(quoted);
-        compile = Pattern.compile(join);
-        return compile;
+        List<Pattern> compiled = Lists.newArrayList();
+        for (String appSpecifier : appSpecifiers) {
+            List<String> quoted = ImmutableList.copyOf(on("*").split(appSpecifier)).stream().map(Pattern::quote).collect(Collectors.toList());
+            String join = Joiner.on(".*").join(quoted);
+            compiled.add(Pattern.compile(join));
+        }
+        this.compiledPatterns = compiled;
+        return compiled.stream();
+    }
+
+
+    @Override
+    public String toString() {
+        return objectName + ":" + methodName + "(" + Joiner.on(",").join(args) + ")";
     }
 }

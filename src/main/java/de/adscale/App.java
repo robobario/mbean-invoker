@@ -54,7 +54,7 @@ public class App {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this).add("appName", appName).add("host", host).add("jmxPort", jmxPort).toString();
+        return "["+appName + ":" + host + ":" + jmxPort + "]";
     }
 
 
