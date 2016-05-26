@@ -1,5 +1,6 @@
 package de.adscale;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import org.apache.commons.cli.*;
@@ -24,7 +25,13 @@ public class MbeanInvoker {
         Options options = new Options();
         try {
             Config conf = parseOptions(args, options);
-            invokeAll(conf);
+            if(Objects.equals(conf.getOperation(), "")){
+                MbeanRunConfig mbeanRunConfig = getMbeanRunConfig(conf);
+                System.out.println("provide an operation with -o from :");
+                mbeanRunConfig.getOperations().keySet().forEach(System.out::println);
+            }else {
+                invokeAll(conf);
+            }
         }
         catch (Exception e) {
             throw new RuntimeException(e);
@@ -35,7 +42,9 @@ public class MbeanInvoker {
     private static void invokeAll(Config conf) throws FileNotFoundException {
         MbeanRunConfig mbeanRunConfig = getMbeanRunConfig(conf);
         try {
-            for (MbeanRun mbeanRun : mbeanRunConfig.getMbeansToRun()) {
+            String operation = conf.getOperation();
+            OperationConfig config = mbeanRunConfig.getOperations().get(operation);
+            for (MbeanRun mbeanRun : config.getMbeansToRun()) {
                 invoke(mbeanRun, mbeanRunConfig);
             }
         }
@@ -123,11 +132,13 @@ public class MbeanInvoker {
 
     private static Config parseOptions(String[] args, Options options) throws ParseException {
         options.addOption("f", "app-configuration-file", true, "configuration file containing app information");
+        options.addOption("o", "operation", true, "operation to run");
         CommandLineParser parser = new DefaultParser();
         try {
             CommandLine cmd = parser.parse(options, args);
             String appConfigFile = cmd.getOptionValue("app-configuration-file", "");
-            return new Config(appConfigFile);
+            String operation = cmd.getOptionValue("operation", "");
+            return new Config(appConfigFile, operation);
         }
         catch (Exception e) {
             System.out.println(e.getMessage());
@@ -141,9 +152,11 @@ public class MbeanInvoker {
     private static class Config {
 
         private final String appConfigurationFile;
+        private String operation;
 
 
-        Config(String appConfigurationFile) {
+        Config(String appConfigurationFile, String operation) {
+            this.operation = operation;
             if (appConfigurationFile == null) {
                 throw new IllegalArgumentException();
             }
@@ -153,6 +166,10 @@ public class MbeanInvoker {
 
         public String getAppConfigurationFile() {
             return appConfigurationFile;
+        }
+
+        public String getOperation() {
+            return operation;
         }
     }
 }

@@ -1,11 +1,12 @@
 package de.adscale;
 
 import java.util.List;
+import java.util.Map;
 
 public class MbeanRunConfig {
     private List<App> applications;
 
-    private List<MbeanRun> mbeansToRun;
+    private Map<String, OperationConfig> operations;
 
     public List<App> getApplications() {
         return applications;
@@ -15,11 +16,11 @@ public class MbeanRunConfig {
         this.applications = applications;
     }
 
-    public List<MbeanRun> getMbeansToRun() {
-        return mbeansToRun;
+    public Map<String, OperationConfig> getOperations() {
+        return operations;
     }
 
-    public void setMbeansToRun(List<MbeanRun> mbeansToRun) {
-        this.mbeansToRun = mbeansToRun;
+    public void setOperations(Map<String, OperationConfig> operations) {
+        this.operations = operations;
     }
 }
